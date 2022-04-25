@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.mybatis.mapper.DynamicSQLMapper">
+
+
+    <!--把常用的字段放在一个sql片段里 然后如果查询这些直接在select后面加入<include refid="这里写sql id">就可以了-->
+    <sql id="empColumns">eid,emp_name,age,sex,email</sql>
+    
+    <select id="1" resultType="Emp">
+        select <include refid="empColumns"></include> from ;
+    </select>
+    
+    
+
+    <!--int insertMoreByList(List<Emp> emps);-->
+    <insert id="insertMoreByList">
+        insert into t_emp values
+        <foreach collection="emps" item="emp" separator=",">
+            (null,#{emp.empName},#{emp.age},#{emp.sex},#{emp.email},null)
+        </foreach>
+    </insert>
+
+
+    <!--int deleteMoreByArray(@Param("eids") Integer[] eids);-->
+    <delete id="deleteMoreByArray1">
+        delete from t_emp where
+        <foreach collection="eids" item="eid" separator="or">
+           eid = #{eid}
+        </foreach>
+    </delete>
+
+
+    <!--int deleteMoreByArray(@Param("eids") Integer[] eids);-->
+    <delete id="deleteMoreByArray">
+        delete from t_emp where eid  in
+        <foreach collection="eids" item="eid" separator=","  open="(" close=")">
+            #{eid}
+        </foreach>
+    </delete>
+
+
+
+    <!--List<Emp> getEmpByChoose(Emp emp);-->
+    <select id="getEmpByChoose" resultType="Emp">
+        select * from t_emp
+        <where>
+            <choose>
+                <when test="empName != null and empName !=''">
+                    emp_name = #{empName}
+                </when>
+                <when test="age != null and age !=''">
+                     age = #{age}
+                </when>
+                <when test="sex != null and sex !=''">
+                     sex = #{sex}
+                </when>
+                <when test="email != null and email !=''">
+                     email = #{email}
+                </when>
+                <otherwise>
+                    did = 1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+
+        <!-- List<Emp> getEmpByCondition(Emp emp);-->
+    <select id="getEmpByConditionOne" resultType="Emp">
+        select * from t_emp where 1=1
+        <if test="empName != null and empName != ''">
+            emp_name=#{empName}
+        </if>
+        <if test="age != null and age != ''">
+            and age=#{age}
+        </if>
+        <if test="sex != null and sex != ''">
+            and sex=#{sex}
+        </if>
+        <if test="email != null and email != ''">
+            and email=#{email}
+        </if>
+    </select>
+
+    <!-- List<Emp> getEmpByCondition(Emp emp);-->
+    <select id="getEmpByConditionTwo" resultType="Emp">
+        select * from t_emp
+        <where>
+            <if test="empName != null and empName != ''">
+                emp_name=#{empName}
+            </if>
+            <if test="age != null and age != ''">
+                and age=#{age}
+            </if>
+            <if test="sex != null and sex != ''">
+                and sex=#{sex}
+            </if>
+            <if test="sex != null and sex != ''">
+                and email=#{email}
+            </if>
+        </where>
+    </select>
+
+    <!-- List<Emp> getEmpByCondition(Emp emp);-->
+    <select id="getEmpByCondition" resultType="Emp">
+        select * from t_emp
+        <trim prefix="where"  suffixOverrides="and|or" >
+        <if test="empName != null and empName != ''">
+            emp_name=#{empName} and
+        </if>
+        <if test="age != null and age != ''">
+            age=#{age} and
+        </if>
+        <if test="sex != null and sex != ''">
+            sex=#{sex} and
+        </if>
+        <if test="sex != null and sex != ''">
+            email=#{email}
+        </if>
+    </trim>
+</select>
+
+</mapper>
